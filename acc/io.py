@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+I/O modules
+"""
 import os
 import commentjson
 import glob
@@ -37,6 +40,18 @@ def _load_json(jsonfile):
 
 
 def _acc_read(file, outpath, acc_type, phase, force=True, tt_model="ak135", depth_unit="km"):
+    """
+    Read seismic data.
+
+    :param file: file name to be read
+    :param outpath: where to save the data
+    :param acc_type: event or noise
+    :param phase: if acc_type='event', then calculate the traveltime of the phase
+    :param force: force to overwrite when file exists if force is True
+    :param tt_model: 1-d theoretical model, e.g., ak135 used to calculate traveltime of a specific phase
+    :param depth_unit: unit of depth, general one is km, but in some cases it could be m.
+    :return:
+    """
 
     tr = read(file)[0]
 
@@ -73,6 +88,16 @@ def _acc_read(file, outpath, acc_type, phase, force=True, tt_model="ak135", dept
 
 
 def _get_sac_origin(tr):
+    """
+    Get the origin time of an event trace in sac format.
+
+    :param tr: A event trace
+    :return origin: origin time of an event
+
+    .. Note::
+        The trace should be sac formatted.
+
+    """
     try:
         origin = tr.stats.starttime - tr.stats.sac.b + tr.stats.sac.o
     except AttributeError:
@@ -83,26 +108,46 @@ def _get_sac_origin(tr):
 
 
 def _get_event_id(tr):
+    """
+    Get event id from a sac-formatted trace.
+
+    :param tr:
+    :return str event_id: event id
+    """
+
     origin = _get_sac_origin(tr)
     event_id = origin.datetime.strftime("%Y%m%d%H%M%S")
     return event_id
 
+
 def _get_event_id_tr(tr):
+    """
+    Get event id from a obspy trace. The obspy trace should have the event_time keyword.
+
+    :param tr: a obspy trace
+    :return str event_id: event id in "%Y%m%d%H%M%S", e.g., '20191019200909'
+    """
     origin = tr.stats.event_time
     event_id = origin.datetime.strftime("%Y%m%d%H%M%S")
     return event_id
 
 
-
 def _get_noise_id(tr):
+    """
+    Get trace id for noise type data. e.g., 'starttime-endtime'
+
+    :param tr: an obspy trace
+    :return str event_id: noise id
+    """
     starttime = tr.stats.starttime
     endtime = tr.stats.endtime
     event_id = "-".join([starttime.strftime("%Y%m%d%H%M%S"), endtime.strftime("%Y%m%d%H%M%S")])
     return event_id
 
+
 def _get_station_id(tr):
     """
-    Get station ID of a given trace.
+    Get station id of a given trace.
 
     :param tr: trace
     :return station_id: station id formatted as '{newwork}.{station}.{location}'.
@@ -116,6 +161,13 @@ def _get_station_id(tr):
 
 
 def _get_noise_data(tr, acc_type):
+    """
+    Get update sac-trace header to obspy trace header station_latitude etc.
+
+    :param tr:
+    :param acc_type:
+    :return tr:
+    """
 
     station_longitude = tr.stats.sac.stlo
     station_latitude = tr.stats.sac.stla
@@ -130,7 +182,27 @@ def _get_noise_data(tr, acc_type):
 
     return tr
 
+
 def _get_event_data(tr, tt_model, phase, acc_type, depth_unit="km"):
+    """
+    Update a sac trace to a obspy trace and update trace header,
+    and calculate theoretical traveltime of a specific model and phase
+
+    :param tr:
+    :param tt_model:
+    :param phase:
+    :param acc_type:
+    :param depth_unit:
+    :return:
+
+    .. Note::
+        The input trace should be read from sac-formatted files.
+
+        depth_unit is not used. if depth>1000 then unit should be meter,
+        since no events deeper than 700 km on the earth.
+
+    """
+
     model = TauPyModel(model=tt_model)
 
     event_longitude = tr.stats.sac.evlo
@@ -198,6 +270,12 @@ def _get_event_data(tr, tt_model, phase, acc_type, depth_unit="km"):
 
 
 def import_data(jsonfile):
+    """
+    Import data from external media
+
+    :param jsonfile: parameter filename
+    :return:
+    """
 
     kwargs = _load_json(jsonfile)
     io = kwargs["io"]

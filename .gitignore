@@ -2,6 +2,9 @@ acc/example
 acc/tests
 acc/__pycache__
 acc/data
+docs/build
+docs/*pdf
+docs/*log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

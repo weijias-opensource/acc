@@ -24,7 +24,8 @@ LONG_DESCRIPTION = (
 #     'console_scripts': ['rf-runtests = rf.tests:run',
 #                         'rf = rf.batch:run_cli']}
 
-REQUIRES = ['decorator', 'matplotlib>=2', 'numpy', 'scipy>=0.19.0',
+REQUIRES = ['commentjson',
+            'decorator', 'matplotlib>=2', 'numpy', 'scipy>=0.19.0',
             'setuptools', 'obspy>=1.0.3',
             'cartopy', 'geographiclib', 'shapely', 'toeplitz', 'tqdm']
 
