@@ -534,20 +534,30 @@ def _select_data_event(tr, dist_range=[30, 90], magnitude=[5.0, 9.0],
 
 
 def _cal_event_snr(tr, signal=[-10, 10], noise=[-100, -50], waterlevel=1.0e-8):
+    """
+    Calculation of SNR for event data.
+
+    :param tr:
+    :param signal:
+    :param noise:
+    :param waterlevel:
+    :return:
+    """
+
     tr_sig = tr.copy()
     tr_noi = tr.copy()
 
     t1 = tr.stats.onset + signal[0]
     t2 = tr.stats.onset + signal[1]
     if t1 < tr.stats.starttime or t2 > tr.stats.endtime:
-        logging.warn("t1 < tr.stats.starttime")
+        logging.warning("t1 < tr.stats.starttime")
         return 0
     tr_sig.trim(starttime=t1, endtime=t2)
 
     t1 = tr.stats.onset + noise[0]
     t2 = tr.stats.onset + noise[1]
     if t1 < tr.stats.starttime or t2 > tr.stats.endtime:
-        logging.warn("t1 < tr.stats.starttime")
+        logging.warning("t1 < tr.stats.starttime")
         return 0
     tr_noi.trim(starttime=t1, endtime=t2)
 
@@ -559,6 +569,13 @@ def _cal_event_snr(tr, signal=[-10, 10], noise=[-100, -50], waterlevel=1.0e-8):
 
 
 def processing_noise_Z(jsonfile):
+    """
+    Parallel processing of noise autocorrelation.
+
+    :param jsonfile:
+    :return:
+    """
+
     # load imported data from files
     kwargs = _load_json(jsonfile)
     njobs = kwargs["njobs"]
@@ -593,6 +610,14 @@ def processing_noise_Z(jsonfile):
 
 
 def _proc_noise_Z(file, **kwargs):
+    """
+    Internal functions of calculate z-comp autocorrelation for noise data.
+
+    :param file:
+    :param kwargs:
+    :return:
+    """
+
     # read file and return an obspy trace
     tr = read(file)[0]
     # process z-component only.
@@ -654,6 +679,17 @@ def _proc_noise_Z(file, **kwargs):
 
 def _sliding_autocorrelation(tr, length=3600, overlap=1800,
                              filter=[0.5, 4], corners=2, zerophase=True):
+    """
+    Sliding autocorrelation for noise data.
+
+    :param tr:
+    :param length:
+    :param overlap:
+    :param filter:
+    :param corners:
+    :param zerophase:
+    :return:
+    """
     trace = tr.copy()
     time_series = iter_time(tr=trace, length=length, overlap=overlap)
     # print(time_series)
