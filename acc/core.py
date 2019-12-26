@@ -238,6 +238,13 @@ def rotation(stream, method="NE->RT", acc_type="event"):
 
 
 def _find_start_end_time(stream):
+    """
+    find the start and end time of a specific stream.
+
+    :param stream:
+    :return starttime, endtime:
+    """
+
     starttime = []
     endtime = []
 
@@ -249,6 +256,19 @@ def _find_start_end_time(stream):
 
 
 def remove_response(trace, resp_path, pre_filt=(0.01, 0.02, 8, 9), output="VEL", format="XML"):
+    """
+    Romove instrumental response
+
+    :param trace:
+    :param resp_path:
+    :param pre_filt:
+    :param output:
+    :param format:
+    :return:
+
+    .. Note::
+        currently only support XML DATALESS RESP format.
+    """
 
     station_id = ".".join([trace.stats.network, trace.stats.station])
     trace_id = trace.id

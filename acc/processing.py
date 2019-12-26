@@ -26,6 +26,13 @@ logging.basicConfig(level=logging.NOTSET, format='%(asctime)s %(filename)s[line:
 
 
 def processing_event_Z(jsonfile):
+    """
+    processing vertical component of event data
+
+    :param jsonfile:
+    :return:
+    """
+
     # load imported data from files
     kwargs = _load_json(jsonfile)
     njobs = kwargs["njobs"]
@@ -84,6 +91,13 @@ def processing_event_full(jsonfile):
 
 
 def _proc_event_full(st, **kwargs):
+    """
+    processings including
+
+    :param st:
+    :param kwargs:
+    :return:
+    """
     # instrument response removal, spectral whitening, temporal normalization
     # autocorrelation and filter, then output results.
     def iter3c(stream):
@@ -117,6 +131,17 @@ def _proc_event_full(st, **kwargs):
 
 
 def _proc_event_rst(st, **kwargs):
+    """
+    processing including rotation, spectral whitening and temporal normalization.
+    and cross-correlation.
+
+    :param st:
+    :param kwargs:
+    :return: 1 if processing successfully.
+
+    .. Note::
+        rst is short as Rotation Spectral whitening and Temporal normalization.
+    """
     # calculation SNR
     # trace = Trace()
     for tr in st:
@@ -176,8 +201,10 @@ def _proc_event_rst(st, **kwargs):
             logging.warn("unknown trace channel.", tr.stats.channel)
 
     # auto and cross correlation
+    # auto
     options = kwargs["correlate"]
     cc_ll = _crosscorrelation(tr1=trace_l, tr2=trace_l, **options)
+    # cross
     options = kwargs["cross_correlate"]
     cc_ql = _crosscorrelation(tr1=trace_q, tr2=trace_l, **options)
     cc_tl = _crosscorrelation(tr1=trace_t, tr2=trace_l, **options)
@@ -221,6 +248,19 @@ def _proc_event_rst(st, **kwargs):
 
 
 def _rot(st, method="NE->RT"):
+    """
+    rotation.
+
+    :param st:
+    :param method: "NE->RT", "ZNE->LQT".
+    :return:
+
+    .. Note::
+        the code can handle 'Z12', '123', 'ZNE'. It requires trace header of component_azimuth and component_inclination.
+        if method == "NE->RT", then the two components rotation will be applied.
+        But while the components are "123" or "Z12", they are rotated to "ZNE" first.
+    """
+
     st3c = st.copy()
 
     # the rotating traces should have the same starttime and endtime
@@ -265,6 +305,13 @@ def _rot(st, method="NE->RT"):
 
 
 def _proc(tr, sampling_rate=10):
+    """
+    Basic processing including downsampling, detrend, and demean.
+
+    :param tr: raw trace
+    :param sampling_rate:
+    :return tr: trace after processing
+    """
     # deep copy
     tr2 = tr.copy()
     tr2.interpolate(sampling_rate)
@@ -274,6 +321,15 @@ def _proc(tr, sampling_rate=10):
 
 
 def _simple_proc(st, sampling_rate=10, njobs=1):
+    """
+    A parallel version of `_proc`, i.e., Basic processing including downsampling, detrend, and demean.
+
+    :param st: an obspy stream
+    :param sampling_rate: expected sampling rate
+    :param njobs: number of jobs or CPU to use
+    :return st: stream after processing
+    """
+
     # downsampling, detrend, demean
     do_work = partial(_proc, sampling_rate=sampling_rate)
 
@@ -301,11 +357,23 @@ def _simple_proc(st, sampling_rate=10, njobs=1):
 
 
 def _proc_event_Z(file, **kwargs):
+    """
+    Processing a single component Z including downsampling, detrend, demean,
+    remove instrumental response, selection of data by SNR>threshold,
+    spectral whitening, temporal normalization and auto-correlation.
+
+    For event type data.
+
+    :param file:
+    :param kwargs:
+    :return:
+    """
+
     # read file and return an obspy trace
     tr = read(file)[0]
     # process z-component only.
     if tr.stats.channel[-1] is not "Z":
-        logging.warn("component is not Z: %s", file)
+        logging.warning("component is not Z: %s", file)
         return 0
 
     # first step is downsamping data to reduce computational burden
@@ -368,6 +436,19 @@ def _proc_event_Z(file, **kwargs):
 
 
 def _autocorrelation(tr, window=[-20, 70], filter=[0.5, 4], corners=2, zerophase=True):
+    """
+    Autocorrelation for event type data.
+
+    :param tr:
+    :param window:
+    :param filter: A tuple or a list containing the lower and upper limit of filter.
+    :param corners:
+    :param zerophase:
+    :return:
+
+    .. Note::
+        filter after autocorrelation.
+    """
     tr2 = tr.copy()
     t1 = tr2.stats.onset + window[0]
     t2 = tr2.stats.onset + window[1]
@@ -376,13 +457,26 @@ def _autocorrelation(tr, window=[-20, 70], filter=[0.5, 4], corners=2, zerophase
     data = tr2.data
     cc = correlate(in1=data, in2=data, mode="full")
     tr2.data = np.copy(cc)
-    tr2.filter(type="bandpass", freqmin=filter[0], freqmax=filter[1],
-               corners=corners, zerophase=zerophase)
+    if filter is not None:
+        tr2.filter(type="bandpass", freqmin=filter[0], freqmax=filter[1],
+                   corners=corners, zerophase=zerophase)
     tr2.data = tr2.data[npts:]
     return tr2
 
 
 def _crosscorrelation(tr1, tr2, window=[-20, 70], filter=[0.5, 4], corners=2, zerophase=True):
+    """
+    cross-correlation for event type data.
+
+    :param tr1:
+    :param tr2:
+    :param window:
+    :param filter:
+    :param corners:
+    :param zerophase:
+    :return:
+    """
+
     tra = tr1.copy()
     trb = tr2.copy()
 
