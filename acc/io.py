@@ -155,7 +155,10 @@ def _get_station_id(tr):
 
     s = tr.id
     s = s.split(".")
-    station_id = ".".join(s[:3])
+    if s[2] == "":
+        station_id = ".".join(s[:2])
+    else:
+        station_id = ".".join(s[:3])
 
     return station_id
 
@@ -220,8 +223,22 @@ def _get_event_data(tr, tt_model, phase, acc_type, depth_unit="km"):
     station_latitude = tr.stats.sac.stla
     station_elevation = tr.stats.sac.stel
 
-    component_azimuth = tr.stats.sac.cmpaz
-    component_inclination = tr.stats.sac.cmpinc
+    try:
+        component_azimuth = tr.stats.sac.cmpaz
+        component_inclination = tr.stats.sac.cmpinc
+    except:
+        print(tr.stats)
+        if tr.stats.channel[-1] == "Z":
+            component_azimuth = 0
+            component_inclination = 0
+        elif tr.stats.channel[-1] == "N":
+            component_azimuth = 0
+            component_inclination = 90
+        elif tr.stats.channel[-1] == "E":
+            component_azimuth = 90
+            component_inclination = 90
+
+
 
     event_time = _get_sac_origin(tr)
 
