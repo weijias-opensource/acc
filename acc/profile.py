@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from shapely.geometry import Polygon
 from geographiclib.geodesic import Geodesic
+import pandas as pd
+import numpy as np
+
 
 _LARGE_BOX_WIDTH = 2000
 
@@ -81,3 +84,70 @@ def _find_box(latlon, boxes, crs=None):
         if p.within(poly):
             return box
 
+
+def _find_box_cartesian(latlon, boxes):
+    """Return the box which encloses the coordinates."""
+    from shapely.geometry import Point
+    p = Point(latlon[::-1])
+    for box in boxes:
+        poly = box['poly']
+        if p.within(poly):
+            return box
+
+
+def profile(stream, boxes, crs=None):
+    """
+    Stack traces in stream by piercing point coordinates in defined boxes.
+
+    :param stream: stream with pre-calculated piercing point coordinates
+    :param boxes: boxes created with `get_profile_boxes()`
+    :param crs: cartopy projection (default: AzimuthalEquidistant)
+    :return: profile stream
+    """
+
+    # read all migrated data saved in trace headers into Pandas DataFrame
+    dfmig = pd.DataFrame()
+    for tr in stream:
+        df = tr.stats.mig
+        dfmig = dfmig.append(df)
+
+    # get depth samplings
+    depths = dfmig["depth"].unique()
+    depths = depths.tolist()
+
+    # get lateral samplings
+    pos_dist = []
+    for b in boxes:
+        pos_dist.append(b["pos"])
+    # sampling number
+    npos = len(pos_dist)
+    ndep = len(depths)
+    # init numpy array, stack - final stacked CRP image, count - hit number in each cell
+    stack = np.zeros((ndep, npos), dtype=float)
+    count = np.zeros((ndep, npos), dtype=int)
+
+    # loops
+    for depth in depths:
+        df2 = dfmig[dfmig["depth"] == depth]
+
+        lats = df2["lat"].to_numpy()
+        lons = df2["lon"].to_numpy()
+        data = df2["data"].to_numpy()
+
+        for i, lat in enumerate(lats):
+            lon = lons[i]
+            ppoint = (lat, lon)
+            box = _find_box_cartesian(ppoint, boxes)
+            if box is None:
+                continue
+            pos = box['pos']
+
+            idep = depths.index(depth)
+            ipos = pos_dist.index(pos)
+
+            stack[idep][ipos] += data[i]
+            count[idep][ipos] += 1
+
+    d = np.array(depths)
+
+    return d, stack

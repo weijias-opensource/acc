@@ -8,6 +8,8 @@ from acc.stack import linear_stack
 import numpy as np
 import warnings
 from obspy import Stream
+from collections import OrderedDict
+from acc.migration import mig_one_station
 
 
 def plot_acc_one_station(stream, fname=None, fig_width=7., trace_height=0.5,
@@ -142,3 +144,30 @@ def plot_acc_one_station(stream, fname=None, fig_width=7., trace_height=0.5,
         plt.close(fig)
     else:
         return fig
+
+def plot_ppoint(stream, fname="pp.pdf", depths=[30, 50, 80, 100, 150, 200]):
+
+    colors = ["gray", "red", "blue", "orange", "green", "magenta", "cyan", "chocolate", "pink", "royalblue"]
+    if len(depths) > 10:
+        raise Exception("too many depths. Should be less than 10.")
+
+    fig, ax = plt.subplots()
+
+    for tr in stream:
+        df = tr.stats.mig
+        ax.scatter(tr.stats.station_longitude, tr.stats.station_latitude, c="black", marker="v", s=100)
+
+        for i, depth in enumerate(depths):
+            df2 = df[df["depth"] == depth]
+
+            lat = df2["lat"].to_numpy()
+            lon = df2["lon"].to_numpy()
+
+            ax.scatter(lon, lat, c=colors[i], label=depth)
+
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = OrderedDict(zip(labels, handles))
+    ax.legend(by_label.values(), by_label.keys(), title="Depth (km)")
+
+    plt.tight_layout()
+    plt.savefig(fname)
