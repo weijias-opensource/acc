@@ -7,8 +7,20 @@ from obspy.geodetics import gps2dist_azimuth
 from acc.stack import pws_stack
 from obspy import Stream
 
+import os
+import glob
+from tqdm import tqdm
+from functools import partial
+from multiprocessing import Pool
+import multiprocessing
 
-def mig_one_station(stream, model="ak135", earth_radius=6378137.0):
+from acc.io import _load_json
+import logging
+from obspy import read
+
+# standalone version
+# this function is supposed to be modified to parallel version.
+def mig_one_station(stream, model="ak135", earth_radius=6378137.0, depth_range=(0, 300, 1)):
 
     try:
         # prior to the model used to calculate traveltime
@@ -88,8 +100,8 @@ def mig_one_station(stream, model="ak135", earth_radius=6378137.0):
 
         # second interpolation to regular depth grid. after back-projection the depth sampling is irregular.
         # depth range 0-300 km with an interval of 0.5 km.
-        delta = 1
-        d = np.arange(0, 301, delta)
+        delta = depth_range[2]
+        d = np.arange(depth_range[0], depth_range[1]+delta, delta)
         tr.stats.delta = delta
         ftime = interp1d(depths, time)
         fdist = interp1d(depths, dists)
@@ -119,9 +131,69 @@ def mig_one_station(stream, model="ak135", earth_radius=6378137.0):
     return stream
 
 
+def _mig_1(path, model="ak135"):
+    # read autocorrelograms of a given station saved in `path`
+    st = read(path + "/*pkl")
+    st_mig = mig_one_station(stream=st, model=model, earth_radius=6378137.0)
+
+    return st_mig
+
+
+def migration_1station(jsonfile):
+
+    kwargs = _load_json(jsonfile)
+    io = kwargs["io"]
+
+    njobs = kwargs["njobs"]
+    if njobs > multiprocessing.cpu_count():
+        njobs = multiprocessing.cpu_count()
+
+    # datapath containing auto-correlograms
+    path = io["outpath"] + "/1_results"
+    temp = glob.glob(path + "/*")
+    stations = []
+    for t in temp:
+        if os.path.isdir(t):
+            stations.append(t)
+
+    model = kwargs["migration"]["model"]
+    if model is None:
+        model = kwargs["tt_model"]
+
+    do_work = partial(_mig_1, model=model)
+
+    st_mig_stations = []
+    if njobs == 1:
+        logging.info('do work sequential (%d cores)', njobs)
+        for sta in tqdm(stations, total=len(stations)):
+            st = do_work(sta)
+            st_mig_stations.append(st)
+    else:
+        logging.debug('do work parallel (%d cores)', njobs)
+        pool = multiprocessing.Pool(njobs)
+        for st in tqdm(pool.imap_unordered(do_work, stations), total=len(stations)):
+            st_mig_stations.append(st)
+        pool.close()
+        pool.join()
+
+    # save data into disk
+    outpath = io["outpath"] + "/migration_1station"
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+    for st in st_mig_stations:
+        # station id
+        tr = st[0]
+        if tr.stats.location == "":
+            station_id = ".".join([tr.stats.network, tr.stats.station])
+        else:
+            station_id = ".".join([tr.stats.network, tr.stats.station, tr.stats.location])
+        fn = outpath + "/" + station_id + ".pkl"
+        st.write(fn, format="PICKLE")
+
+
 def migration_one_station_stack(stream, method="PWS", power=2, time_range=[8, 16], coeff=0.5):
     """
-    Stacking of migrated traces for one station.
+    Stacking of migrated traces for one station. Currently not used.
 
     :param stream:
     :param method: "PWS" for phase-weighted stacking and "linear" for linear stacking

@@ -369,70 +369,74 @@ def _proc_event_Z(file, **kwargs):
     :return:
     """
 
-    # read file and return an obspy trace
-    tr = read(file)[0]
-    # process z-component only.
-    if tr.stats.channel[-1] is not "Z":
-        logging.warning("component is not Z: %s", file)
+    try:
+        # read file and return an obspy trace
+        tr = read(file)[0]
+        # process z-component only.
+        if tr.stats.channel[-1] is not "Z":
+            logging.warning("component is not Z: %s", file)
+            return 0
+
+        # first step is downsamping data to reduce computational burden
+        sampling_rate = kwargs["preprocessing"]["sampling_rate"]
+        tr.interpolate(sampling_rate)
+        tr.detrend(type="linear")
+        tr.detrend(type="demean")
+
+        options = kwargs["data_selection_event"]
+        snr_threshold = options["snr_threshold"]
+        snr = _select_data_event(tr, **options)
+        if snr < snr_threshold:
+            return 0
+        tr.stats.update({"snr": snr})
+        logging.info("%s SNR is %f", file, snr)
+
+        # remove instrumental response
+        if kwargs["rm_resp_on"]:
+            option_resp = kwargs["preprocessing"]["resp"]
+            tr = remove_response(trace=tr, **option_resp)
+
+        # spectral whitening
+        if kwargs["whiten_on"]:
+            option_whiten = kwargs["preprocessing"]["whiten"]
+            tr = spectral_whitening(tr=tr, **option_whiten)
+
+        # temporal normalization
+        if kwargs["time_norm_on"]:
+            option_time_norm = kwargs["preprocessing"]["time_norm"]
+            tr = time_norm(tr, **option_time_norm)
+
+        # autocorrelation
+        options = kwargs["correlate"]
+        tr = _autocorrelation(tr, **options)
+
+        # write data to disk
+        tr.stats.channel = "ZZ"  # change trace channel to 'ZZ' after autocorrelation
+        trace_id = tr.id
+        station_id = _get_station_id(tr)
+        event_id = _get_event_id_tr(tr)
+        filename = trace_id + "_" + event_id + ".pkl"
+        outpath = kwargs["io"]["outpath"] + "/1_results"
+        filepath = "/".join([outpath, station_id])
+        if not os.path.exists(filepath):
+            os.makedirs(filepath)
+
+        # extracting data, to have the same length of output data
+        tlen = kwargs["correlate"]["window"]
+        tlen = abs(tlen[1] - tlen[0])
+        tr.trim(starttime=tr.stats.starttime, endtime=tr.stats.starttime + tlen, fill_value=0, pad=True)
+
+        filen = filepath + "/" + filename
+        force = kwargs["io"]["force"]
+        if not force and os.path.exists(filen):
+            pass
+        else:
+            tr.write(filen, format="PICKLE")
+
+        return 1
+
+    except:
         return 0
-
-    # first step is downsamping data to reduce computational burden
-    sampling_rate = kwargs["preprocessing"]["sampling_rate"]
-    tr.interpolate(sampling_rate)
-    tr.detrend(type="linear")
-    tr.detrend(type="demean")
-
-    options = kwargs["data_selection_event"]
-    snr_threshold = options["snr_threshold"]
-    snr = _select_data_event(tr, **options)
-    if snr < snr_threshold:
-        return 0
-    tr.stats.update({"snr": snr})
-    logging.info("%s SNR is %f", file, snr)
-
-    # remove instrumental response
-    if kwargs["rm_resp_on"]:
-        option_resp = kwargs["preprocessing"]["resp"]
-        tr = remove_response(trace=tr, **option_resp)
-
-    # spectral whitening
-    if kwargs["whiten_on"]:
-        option_whiten = kwargs["preprocessing"]["whiten"]
-        tr = spectral_whitening(tr=tr, **option_whiten)
-
-    # temporal normalization
-    if kwargs["time_norm_on"]:
-        option_time_norm = kwargs["preprocessing"]["time_norm"]
-        tr = time_norm(tr, **option_time_norm)
-
-    # autocorrelation
-    options = kwargs["correlate"]
-    tr = _autocorrelation(tr, **options)
-
-    # write data to disk
-    tr.stats.channel = "ZZ"  # change trace channel to 'ZZ' after autocorrelation
-    trace_id = tr.id
-    station_id = _get_station_id(tr)
-    event_id = _get_event_id_tr(tr)
-    filename = trace_id + "_" + event_id + ".pkl"
-    outpath = kwargs["io"]["outpath"] + "/1_results"
-    filepath = "/".join([outpath, station_id])
-    if not os.path.exists(filepath):
-        os.makedirs(filepath)
-
-    # extracting data, to have the same length of output data
-    tlen = kwargs["correlate"]["window"]
-    tlen = abs(tlen[1] - tlen[0])
-    tr.trim(starttime=tr.stats.starttime, endtime=tr.stats.starttime + tlen, fill_value=0, pad=True)
-
-    filen = filepath + "/" + filename
-    force = kwargs["io"]["force"]
-    if not force and os.path.exists(filen):
-        pass
-    else:
-        tr.write(filen, format="PICKLE")
-
-    return 1
 
 
 def _autocorrelation(tr, window=[-20, 70], filter=[0.5, 4], corners=2, zerophase=True):

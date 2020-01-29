@@ -27,6 +27,38 @@ def _get_box(latlon0, azimuth, length, width=_LARGE_BOX_WIDTH, offset=0):
     return box
 
 
+def _get_box_cartesian(latlon0, azimuth, length, width=2000, offset=0):
+    """Create a single box."""
+
+    import math
+    d = offset
+    a = azimuth
+    lat = d*math.cos(a*math.pi/180) / 111.195
+    lon = d*math.sin(a*math.pi/180) / 111.195
+    start = (latlon0[0]+lat, latlon0[1]+lon)
+    azis = ((azimuth - 90) % 360, azimuth,
+            (azimuth + 90) % 360, (azimuth + 180) % 360, (azimuth + 270) % 360)
+    dists = (width/2, length/2, width, length, width)
+    latlon = start
+    corners = []
+    for a, d in zip(azis, dists):
+        # latlon = direct_geodetic(latlon, a, d)
+        # in km
+        lat = d*math.cos(a*math.pi/180) / 111.195
+        lon = d*math.sin(a*math.pi/180) / 111.195
+        latlon = (latlon[0]+lat, latlon[1]+lon)
+        corners.append(latlon[::-1])
+
+    lat = length/2*math.cos(azimuth*math.pi/180) / 111.195
+    lon = length/2*math.sin(azimuth*math.pi/180) / 111.195
+    box = {'poly': Polygon(corners),
+           'length': length,
+           'pos': offset + length/2,
+           'latlon': (start[0], start[1]+lon)}
+#            'latlon': direct_geodetic(start, azimuth, length/2)}
+    return box
+
+
 def direct_geodetic(latlon, azi, dist):
     """
     Solve direct geodetic problem with geographiclib.
@@ -58,7 +90,8 @@ def get_profile_boxes(latlon0, azimuth, bins, width=_LARGE_BOX_WIDTH):
     boxes = []
     for i in range(len(bins)-1):
         length = bins[i+1] - bins[i]
-        box = _get_box(latlon0, azimuth, length, width, offset=bins[i])
+        # box = _get_box(latlon0, azimuth, length, width, offset=bins[i])
+        box = _get_box_cartesian(latlon0, azimuth, length, width, offset=bins[i])
         if i == 0:
             box['profile'] = {}
             box['profile']['latlon'] = latlon0
@@ -119,6 +152,8 @@ def profile(stream, boxes, crs=None):
     pos_dist = []
     for b in boxes:
         pos_dist.append(b["pos"])
+    # print(pos_dist)
+
     # sampling number
     npos = len(pos_dist)
     ndep = len(depths)
@@ -144,10 +179,12 @@ def profile(stream, boxes, crs=None):
 
             idep = depths.index(depth)
             ipos = pos_dist.index(pos)
+            # print(pos, ipos, ppoint)
 
             stack[idep][ipos] += data[i]
             count[idep][ipos] += 1
 
     d = np.array(depths)
+    p = np.array(pos_dist)
 
-    return d, stack
+    return p, d, stack
