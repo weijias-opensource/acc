@@ -1,5 +1,5 @@
-# rf
-## Receiver function calculation in seismology
+# ACC
+## Auto-Correlogram Calculation in seismology
 
 [![build status](https://travis-ci.org/trichter/rf.svg?branch=master)](https://travis-ci.org/trichter/rf)
 [![codecov](https://codecov.io/gh/trichter/rf/branch/master/graph/badge.svg)](https://codecov.io/gh/trichter/rf)

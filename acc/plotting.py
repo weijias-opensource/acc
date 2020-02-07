@@ -248,7 +248,7 @@ def plot_profile(jsonfile):
         print("number of stations to stack: ", len(files))
         stmig = read(path + "/migration_1station/*%s*.pkl" % wc)
         _plot_stations(stmig, latlon0, azimuth, bins, width=binwidth, clip=clip, savepath=path,
-                       depth_range=depth_range, profile_id=profile_id)
+                       depth_range=depth_range, profile_id=profile_id, **kwargs)
 
 
 def _plot_1station(stmig, latlon0, azimuth, bins, width, clip, savepath, depth_range):
@@ -292,7 +292,12 @@ def _plot_1station(stmig, latlon0, azimuth, bins, width, clip, savepath, depth_r
     _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=station_id, clip=clip)
 
 
-def _plot_stations(stmig, latlon0, azimuth, bins, width, clip, savepath, depth_range, profile_id):
+def _plot_stations(stmig, latlon0, azimuth, bins, width, clip, savepath, depth_range, profile_id, **kwargs):
+
+    paras = kwargs["plot"]
+    iclip = paras["image_scale"]
+    wclip = paras["wavef_scale"]
+
     # get boxes for mig-stacking
     boxes = get_profile_boxes(latlon0, azimuth=azimuth, bins=bins, width=width)
 
@@ -302,7 +307,10 @@ def _plot_stations(stmig, latlon0, azimuth, bins, width, clip, savepath, depth_r
     # the setting makes the station location in the center of the image
     # pos -= 0.5*(bins[-1]-bins[0])
 
-    dist_range = [np.min(pos), np.max(pos)]
+    if paras["dist_range"] is None:
+        dist_range = [np.min(pos), np.max(pos)]
+    else:
+        dist_range = paras["dist_range"]
 
     # get station id
     # tr = stmig[0]
@@ -330,10 +338,10 @@ def _plot_stations(stmig, latlon0, azimuth, bins, width, clip, savepath, depth_r
     # print(extent)
 
     # return amp, stack, extent
-    _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=profile_id, clip=clip)
+    _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=profile_id, wclip=wclip, iclip=iclip)
 
 
-def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id, clip):
+def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id, wclip=1, iclip=1):
     # init figure and axes
     N = 256
     rdbu_r = cm.get_cmap('RdBu_r', N)
@@ -344,11 +352,11 @@ def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_
     newcolors[a:b, :] = white
     newcmp = ListedColormap(newcolors)
 
-    fig, (ax2, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(4.5, 3), sharey=True,
-                                   gridspec_kw={'width_ratios': [0.5, 2]})
+    fig, (ax2, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(5.2, 3), sharey=True,
+                                   gridspec_kw={'width_ratios': [0.6, 2]})
     im = ax1.imshow(stack, interpolation='bilinear', aspect="auto",
                     origin="lower", extent=extent,
-                    cmap=newcmp, vmin=-clip, vmax=clip)
+                    cmap=newcmp, vmin=-iclip, vmax=iclip)
 
     ax1.yaxis.set_major_locator(MultipleLocator(50))
     ax1.yaxis.set_minor_locator(MultipleLocator(10))
@@ -367,10 +375,10 @@ def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_
     # ax1.invert_xaxis()
 
     ax2.plot(amp, depth, linewidth=0.75, color="k")
-    ax2.fill_betweenx(depth, 0, amp, where=amp >= 0, facecolor='red')
-    ax2.fill_betweenx(depth, 0, amp, where=amp < 0, facecolor='blue')
+    ax2.fill_betweenx(depth, 0, amp, where=amp >= 0, facecolor='red', alpha=0.7)
+    ax2.fill_betweenx(depth, 0, amp, where=amp < 0, facecolor='blue', alpha=0.7)
     ax2.grid(which="both", axis="y", linestyle=":", linewidth=0.5)
-    ax2.set_xlim([-0.1, 0.1])
+    ax2.set_xlim([-wclip, wclip])
     ax2.set_xlabel("Amplitude")
     ax2.set_ylabel("Depth [km]")
 

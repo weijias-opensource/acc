@@ -55,13 +55,18 @@ setup(name='acc',
       long_description=LONG_DESCRIPTION,
       url='https://github.com/trichter/rf',
       author='Tom Eulenfeld',
-      author_email='tom.eulenfeld@gmail.de',
+      author_email='swj@mail.iggcas.ac.cn; weijia_sun@163.com',
       license='MIT',
       packages=find_packages(),
       package_dir={'acc': 'acc'},
       # install_requires=REQUIRES,
       # extras_require=EXTRAS_REQUIRE,
       # entry_points=ENTRY_POINTS,
+      # please note the entry_points
+      # The magic is in the entry_points parameter. Below console_scripts, each line identifies one console script.
+      # The first part before the equals sign (=) is the name of the script that should be generated,
+      # the second part is the import path followed by a colon (:) with the Click command.
+      entry_points={"console_scripts": ['acc=acc.main:run',],},
       include_package_data=True,
       zip_safe=False,
       classifiers=CLASSIFIERS
