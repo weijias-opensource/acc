@@ -224,7 +224,6 @@ def plot_profile(jsonfile):
     # print(bins)
 
     profile_id = paras["profile_id"]
-    clip = paras["clip_percentage"] / 100.0
 
     path = kwargs["io"]["outpath"]
 
@@ -239,7 +238,7 @@ def plot_profile(jsonfile):
             lat0 = stmig[0].stats.station_latitude - 0.5 * (bins[-1] + bins[0]) / 111.195
             lon0 = stmig[0].stats.station_longitude
             latlon0 = (lat0, lon0)
-            _plot_1station(stmig, latlon0, azimuth, bins, width=binwidth, clip=clip, savepath=path,
+            _plot_1station(stmig, latlon0, azimuth, bins, width=binwidth, savepath=path,
                            depth_range=depth_range)
     # profile
     else:
@@ -247,11 +246,11 @@ def plot_profile(jsonfile):
         files = glob.glob(path + "/migration_1station/*%s*.pkl" % wc)
         print("number of stations to stack: ", len(files))
         stmig = read(path + "/migration_1station/*%s*.pkl" % wc)
-        _plot_stations(stmig, latlon0, azimuth, bins, width=binwidth, clip=clip, savepath=path,
+        _plot_stations(stmig, latlon0, azimuth, bins, width=binwidth, savepath=path,
                        depth_range=depth_range, profile_id=profile_id, **kwargs)
 
 
-def _plot_1station(stmig, latlon0, azimuth, bins, width, clip, savepath, depth_range):
+def _plot_1station(stmig, latlon0, azimuth, bins, width, savepath, depth_range):
     # get boxes for mig-stacking
     boxes = get_profile_boxes(latlon0, azimuth=azimuth, bins=bins, width=width)
 
@@ -292,7 +291,7 @@ def _plot_1station(stmig, latlon0, azimuth, bins, width, clip, savepath, depth_r
     _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=station_id, clip=clip)
 
 
-def _plot_stations(stmig, latlon0, azimuth, bins, width, clip, savepath, depth_range, profile_id, **kwargs):
+def _plot_stations(stmig, latlon0, azimuth, bins, width, savepath, depth_range, profile_id, **kwargs):
 
     paras = kwargs["plot"]
     iclip = paras["image_scale"]

@@ -3,52 +3,37 @@
 # It is strongly suggested to read the self-commented configuration file.
 {
 
-# type of data used to image structures, "noise", "event"
-# if "noise" selected, then Z-components would be used. Currently only support Z-component.
+# type of data used to image structures
 # You can select "event" to use teleseismic events or global events using the corresponding phases.
-# If noise or event are selected, then only Z-component data would be processed for imaging.
+# Only Z-component data would be processed for imaging.
 # Correspondingly, the phase would be "P" no matter what you set phase to.
-# You can set acc_type to event_3c to run 3-Component imaging.
-"acc_type": "event", # "noise", "event", "event_3c"
-# "component": ["Z", "E", "N", "1", "2", "3"], # "Z"
-"phase": "P", # "P", "S"
+"acc_type": "event", # "event" supported only
+"phase": "P", # "P" supported only
 
 # number of CPU cores to processing data, if null then use all available CPUs.
 "njobs": 12,
 
 ### switches of processing
-"rm_resp_on": false, # switch of instrumental response removal
+"rm_resp_on": false, # switch of instrumental response removal. I strongly you remove RESP externally.
 "whiten_on": true, # switch of spectral whitening
 "time_norm_on": false, # switch of temporal normalization
-# "rotation": false, # switch of rotation of 3-component data
 
 "tt_model": "ak135", # model for travel time calculation
-"pp_model": "ak135", # Path to model file for pp calculation
-"depth_unit": "m", # "km", "m"
+"pp_model": "ak135", # model for pirece point calculation
+"depth_unit": "m", # "km", "m" of focal depth. Now automatically selected in the code.
 
 ### input/output options ###
 "io": {
 
         # Data can be
-        #   1. a glob expression of files. All files are read at once. If you have
-        #      a huge dataset, think about using one of the other two available
-        #      options.
+        #      a wildcard expression of files. All files are read at once. If you have
+        #      a huge dataset, think about splitting data into several small pieces.
         "data": "RAW_DATA/*/*.sac",
         # whether force to overwrite if files already existed. true: overwrite, false: skip
         "force": true,
 
-        # files saving station earthquake information. These two files might be useless if these information
-        # have been provided in SAC headers for example. event focal parameters, station locations.
-        #"station_xml": null,
-        #"event_xml": null,
-
-        # File format for input data (currently supported only "SAC")
-        # File format for output (one of "MSEED", "SAC")
-        # "format": "SAC",
-
-        # Filenames or path for results (can also be the same file for all results) and path for plots
+        # roopath for results and figures
         "outpath": "acc"
-
 },
 
 
@@ -58,7 +43,7 @@
         ### options for event_type of "event"
         "dist_range": [30, 90], # distace range in degree
         "magnitude": [5.0, 7.0], # select all data, use a wide range, e.g., [-10, 100]
-        "snr_threshold": 2.0, # event greater than 'snr' will be chose.
+        "snr_threshold": 2.0, # signal-to-noise ration, event greater than 'snr_threshold' will be chosen.
         "signal": [-10, 10], # time window of signal in sec relative to the theoretical arrival time
         "noise": [-40, -20], # time window of noise in sec relative to the theoretical arrival time
         "waterlevel": 1.0e-8 # used for SNR calculation to avoid zero division
@@ -69,21 +54,6 @@
 "preprocessing": {
         # including basic single station processings: downsampling, instrumental response removal, detrend, demean
         "sampling_rate": 20, # sampling rate in Hz, 10 Hz mean 0.1 s in sampling interval
-
-        "rotation_method": "NE->RT", # "NE->RT" "ZNE->LQT"
-
-        ### options for instrument response removal
-        # The response file should follow the convention. i.e.,
-        # *{network}.{station}*.xml for "XML",
-        # dataless.*{network}.{station}* for "DATALESS", and
-        # RESP*{network}.{station}.{location}.{channel}* for "RESP".
-        # SACPZ not supported.
-        "resp":{
-                "pre_filt": [0.01, 0.02, 5, 6],  # pre-filter
-                "output": "VEL", # "DISP", "VEL", "ACC"
-                "format": "XML", # "XML", "DATALESS", "RESP"
-                "resp_path": "/home/weijias/work/download/MUN/StationXML" # all response file should be located in this directory
-        },
 
         ### options for spectral whitening
         "whiten":{
@@ -105,6 +75,7 @@
         }
 },
 
+
 ### options for auto and cross correlation
 "correlate":{
         ### options for event_type of "event"
@@ -114,27 +85,8 @@
         "zerophase": true # filter parameter
 },
 
-"cross_correlate" : {
-        "window": [-20, 70], # in sec relative to the theoretical arrival time
-        # the cross correlation is equivalent with receiver function. Then the frequency band should be comparable.
-        "filter": [0.05, 0.5],
-        "corners": 2, # filter parameter
-        "zerophase": true # filter parameter
-},
 
-"correlate_noise":{
-        ### options for event_type of "noise", data with gaps will be discarded.
-        # The length of output data is the same as the one for event defined in ["correlate"]["window"]
-        # length of each correlation in seconds and overlap (e.g., 4 hour correlations with 2 hour overlap)
-        "length": 14400, # in second
-        "overlap": 7200, # overlap in second
-        "filter": [1, 4], # frequency band
-        "corners": 2, # filter parameter
-        "zerophase": true # filter parameter
-},
-
-
-### options for stacking
+### options for stacking, not used for this example.
 "stack": {
         "method": "linear", # "linear", "PWS", "bootstrap_linear", 'bootstrap_PWS'
         "power": 2, # power of PWS, 0 means linear stacking
@@ -145,25 +97,7 @@
 },
 
 
-### options for time-to-depth conversion
-"time2depth": {
-        "model": null, # if null, then use the tt_model
-        "method": "moveout", # "moveout" or "migration"
-
-        # options for moveout
-        "moveout": {
-                "depth_range": [0, 400] # depth range
-
-        },
-        # options for migration
-        "migration": {
-                "depth_range": [0, 400] # depth range
-        },
-        "depth_range": [0, 400], # depth range
-        "depth_interval": 0.1 # km
-},
-
-### options for migration
+### options for migration and profile settings
 "migration": {
         "model": null # if null, then use the tt_model
 },
@@ -175,7 +109,6 @@
         "binsize": 5, # bin size in km
         "binwidth": 200, # bin width in km
         "profile_id": "WB", # profile id shown on the top right corner.
-        "clip_percentage": 20, # clip to enhance the weak signals in deep
         "wild_card": "WB" # the wildcard is used to extract those expected stations to stack. "*" to select all stations
 },
 

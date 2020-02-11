@@ -3,7 +3,7 @@
 
 Extracting P-wave reflections between the free surface and the lithospheric discontinuities to image the subsurface structures.
 
-### Installation
+## Installation
 
 Here I provide two conventional ways to install the package. The first is downloading the code via git clone command.
 
