@@ -178,8 +178,11 @@ def migration_1station(jsonfile):
 
     # save data into disk
     outpath = io["outpath"] + "/migration_1station"
-    if not os.path.exists(outpath):
+    # if not os.path.exists(outpath):
+    try:
         os.makedirs(outpath)
+    except:
+        pass
     for st in st_mig_stations:
         # station id
         tr = st[0]

@@ -32,7 +32,7 @@ The second is just simply executing the command of
 ```
 pip install acc
 ```
-.
+. (NOT WORK NOW. coming soon.)
 
 ## Getting Started
 
@@ -73,7 +73,7 @@ If you have any suggestions to help improve the package, please let me know and 
 
 The author learned to write a flexible and practical code for friendly usage from other packages. A small portion of code in this packakge is also reproduced from other projects.
 
-* rf
-* seispy
-* etc
+* [rf](https://github.com/trichter/rf)
+* [seispy](https://github.com/xumi1993/seispy)
+* [obspy](https://github.com/obspy/obspy)
 

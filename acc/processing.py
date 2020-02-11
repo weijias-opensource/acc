@@ -230,8 +230,11 @@ def _proc_event_rst(st, **kwargs):
         filename = trace_id + "_" + event_id + ".pkl"
         outpath = kwargs["io"]["outpath"] + "/1_results"
         filepath = "/".join([outpath, station_id])
-        if not os.path.exists(filepath):
+        # if not os.path.exists(filepath):
+        try:
             os.makedirs(filepath)
+        except:
+            pass
 
         # extracting data, to have the same length of output data
         tlen = kwargs["correlate"]["window"]
@@ -418,8 +421,11 @@ def _proc_event_Z(file, **kwargs):
         filename = trace_id + "_" + event_id + ".pkl"
         outpath = kwargs["io"]["outpath"] + "/1_results"
         filepath = "/".join([outpath, station_id])
-        if not os.path.exists(filepath):
+        # if not os.path.exists(filepath):
+        try:
             os.makedirs(filepath)
+        except:
+            pass
 
         # extracting data, to have the same length of output data
         tlen = kwargs["correlate"]["window"]
@@ -668,8 +674,11 @@ def _proc_noise_Z(file, **kwargs):
         filename = trace_id + "_" + event_id + ".pkl"
         outpath = kwargs["io"]["outpath"] + "/1_results"
         filepath = "/".join([outpath, station_id])
-        if not os.path.exists(filepath):
+        # if not os.path.exists(filepath):
+        try:
             os.makedirs(filepath)
+        except:
+            pass
 
         filen = filepath + "/" + filename
         force = kwargs["io"]["force"]

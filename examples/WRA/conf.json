@@ -1,0 +1,190 @@
+### Configure file for the ACC package in json format
+# Comments are indicated with "#" and ignored while parsing
+# It is strongly suggested to read the self-commented configuration file.
+{
+
+# type of data used to image structures, "noise", "event"
+# if "noise" selected, then Z-components would be used. Currently only support Z-component.
+# You can select "event" to use teleseismic events or global events using the corresponding phases.
+# If noise or event are selected, then only Z-component data would be processed for imaging.
+# Correspondingly, the phase would be "P" no matter what you set phase to.
+# You can set acc_type to event_3c to run 3-Component imaging.
+"acc_type": "event", # "noise", "event", "event_3c"
+# "component": ["Z", "E", "N", "1", "2", "3"], # "Z"
+"phase": "P", # "P", "S"
+
+# number of CPU cores to processing data, if null then use all available CPUs.
+"njobs": 12,
+
+### switches of processing
+"rm_resp_on": false, # switch of instrumental response removal
+"whiten_on": true, # switch of spectral whitening
+"time_norm_on": false, # switch of temporal normalization
+# "rotation": false, # switch of rotation of 3-component data
+
+"tt_model": "ak135", # model for travel time calculation
+"pp_model": "ak135", # Path to model file for pp calculation
+"depth_unit": "m", # "km", "m"
+
+### input/output options ###
+"io": {
+
+        # Data can be
+        #   1. a glob expression of files. All files are read at once. If you have
+        #      a huge dataset, think about using one of the other two available
+        #      options.
+        "data": "RAW_DATA/*/*.sac",
+        # whether force to overwrite if files already existed. true: overwrite, false: skip
+        "force": true,
+
+        # files saving station earthquake information. These two files might be useless if these information
+        # have been provided in SAC headers for example. event focal parameters, station locations.
+        #"station_xml": null,
+        #"event_xml": null,
+
+        # File format for input data (currently supported only "SAC")
+        # File format for output (one of "MSEED", "SAC")
+        # "format": "SAC",
+
+        # Filenames or path for results (can also be the same file for all results) and path for plots
+        "outpath": "acc"
+
+},
+
+
+### options of data selection ###
+# selection criteria for "event" data
+"data_selection_event": {
+        ### options for event_type of "event"
+        "dist_range": [30, 90], # distace range in degree
+        "magnitude": [5.0, 7.0], # select all data, use a wide range, e.g., [-10, 100]
+        "snr_threshold": 2.0, # event greater than 'snr' will be chose.
+        "signal": [-10, 10], # time window of signal in sec relative to the theoretical arrival time
+        "noise": [-40, -20], # time window of noise in sec relative to the theoretical arrival time
+        "waterlevel": 1.0e-8 # used for SNR calculation to avoid zero division
+},
+
+
+### options of pre-processing
+"preprocessing": {
+        # including basic single station processings: downsampling, instrumental response removal, detrend, demean
+        "sampling_rate": 20, # sampling rate in Hz, 10 Hz mean 0.1 s in sampling interval
+
+        "rotation_method": "NE->RT", # "NE->RT" "ZNE->LQT"
+
+        ### options for instrument response removal
+        # The response file should follow the convention. i.e.,
+        # *{network}.{station}*.xml for "XML",
+        # dataless.*{network}.{station}* for "DATALESS", and
+        # RESP*{network}.{station}.{location}.{channel}* for "RESP".
+        # SACPZ not supported.
+        "resp":{
+                "pre_filt": [0.01, 0.02, 5, 6],  # pre-filter
+                "output": "VEL", # "DISP", "VEL", "ACC"
+                "format": "XML", # "XML", "DATALESS", "RESP"
+                "resp_path": "/home/weijias/work/download/MUN/StationXML" # all response file should be located in this directory
+        },
+
+        ### options for spectral whitening
+        "whiten":{
+                "smooth": 0.5, # smoothing window width, if null then do not smooth.
+                "filter": [0.01, 1.0], # frequency band, if null then do not filter.
+                "corners": 4, # filter parameter
+                "zerophase": true, # filter parameter
+                "waterlevel": 1e-8 # waterlevel for safe division
+        },
+
+        ### options for temporal normalization, please see Bensen (2007, GJI).
+        "time_norm":{
+                "method": "run_abs_mean", # supporting "1bit", "run_abs_mean"
+                "time_length": 5, # smoothing window width in sec
+                "filter": [0.01, 0.5], #frequency band in Hz
+                "corners": 2, # filter parameter
+                "zerophase": true, # filter parameter
+                "waterlevel": 1.0e-8 # waterlevel for safe division
+        }
+},
+
+### options for auto and cross correlation
+"correlate":{
+        ### options for event_type of "event"
+        "window": [-10, 110], # in sec relative to the theoretical arrival time
+        "filter": [0.1, 0.5], # frequency band
+        "corners": 4, # filter parameter
+        "zerophase": true # filter parameter
+},
+
+"cross_correlate" : {
+        "window": [-20, 70], # in sec relative to the theoretical arrival time
+        # the cross correlation is equivalent with receiver function. Then the frequency band should be comparable.
+        "filter": [0.05, 0.5],
+        "corners": 2, # filter parameter
+        "zerophase": true # filter parameter
+},
+
+"correlate_noise":{
+        ### options for event_type of "noise", data with gaps will be discarded.
+        # The length of output data is the same as the one for event defined in ["correlate"]["window"]
+        # length of each correlation in seconds and overlap (e.g., 4 hour correlations with 2 hour overlap)
+        "length": 14400, # in second
+        "overlap": 7200, # overlap in second
+        "filter": [1, 4], # frequency band
+        "corners": 2, # filter parameter
+        "zerophase": true # filter parameter
+},
+
+
+### options for stacking
+"stack": {
+        "method": "linear", # "linear", "PWS", "bootstrap_linear", 'bootstrap_PWS'
+        "power": 2, # power of PWS, 0 means linear stacking
+        # options for bootstrap stacking
+        "percentage": 0.9, # percentage of all data used for bootstrap stacking
+        "seed": 123456789, # random seed
+        "n_iter": 100 # number of iterations
+},
+
+
+### options for time-to-depth conversion
+"time2depth": {
+        "model": null, # if null, then use the tt_model
+        "method": "moveout", # "moveout" or "migration"
+
+        # options for moveout
+        "moveout": {
+                "depth_range": [0, 400] # depth range
+
+        },
+        # options for migration
+        "migration": {
+                "depth_range": [0, 400] # depth range
+        },
+        "depth_range": [0, 400], # depth range
+        "depth_interval": 0.1 # km
+},
+
+### options for migration
+"migration": {
+        "model": null # if null, then use the tt_model
+},
+
+"profile": {
+        # the start point and the end point to define a profile, (latitude, longitude)
+        "latlon0": [-19.96, 134.35], # if null, then use the station coordinate. useful for one station
+        "latlon1": [-19.77, 134.39], # the end point.
+        "binsize": 5, # bin size in km
+        "binwidth": 200, # bin width in km
+        "profile_id": "WB", # profile id shown on the top right corner.
+        "clip_percentage": 20, # clip to enhance the weak signals in deep
+        "wild_card": "WB" # the wildcard is used to extract those expected stations to stack. "*" to select all stations
+},
+
+### plotting
+"plot": {
+        "depth_range": [0, 200],
+        "dist_range": [150, 350], # if null, use the range of bins.
+        "image_scale": 4,
+        "wavef_scale": 2
+}
+
+}

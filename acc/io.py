@@ -76,8 +76,11 @@ def _acc_read(file, outpath, acc_type, phase, force=True, tt_model="ak135", dept
 
     filename = trace_id + "_" + event_id + ".pkl"
     filepath = "/".join([outpath, station_id])
-    if not os.path.exists(filepath):
+    # if not os.path.exists(filepath):
+    try:
         os.makedirs(filepath)
+    except:
+        pass
 
     filen = filepath + "/" + filename
     if not force and os.path.exists(filen):
