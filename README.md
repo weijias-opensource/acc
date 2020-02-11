@@ -1,10 +1,4 @@
 
-
-[![build status](https://travis-ci.org/trichter/rf.svg?branch=master)](https://travis-ci.org/trichter/rf)
-[![codecov](https://codecov.io/gh/trichter/rf/branch/master/graph/badge.svg)](https://codecov.io/gh/trichter/rf)
-[![pypi version](https://img.shields.io/pypi/v/rf.svg)](https://pypi.python.org/pypi/rf)
-[![python version](https://img.shields.io/pypi/pyversions/rf.svg)](https://python.org)
-
 # ACC: Auto-Correlogram Calculation in seismology
 
 Extracting P-wave reflections between the free surface and the lithospheric discontinuities to image the subsurface structures.
@@ -32,7 +26,7 @@ The second is just simply executing the command of
 ```
 pip install acc
 ```
-. (NOT WORK NOW. coming soon.)
+
 
 ## Getting Started
 
@@ -52,17 +46,13 @@ Idealy the package can be running on all operating systems, including Windows, M
 
 ## Authors
 
-* **Weijia Sun (weijia_sun[at]163.com)**
+* **Weijia Sun**
 
 If you have any suggestions to help improve the package, please let me know and I will try to implement them as soon.
 
 ## Contributors
 
 * **B L N. Kennett**
-
-## License
-
-
 
 ## Acknowledgments
 

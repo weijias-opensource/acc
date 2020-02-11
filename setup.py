@@ -16,9 +16,12 @@ def find_version(*paths):
 
 
 VERSION = find_version('acc', '__init__.py')
-DESCRIPTION = 'Auto-Correlogram calculation in seismology'
-LONG_DESCRIPTION = (
-    'Please look at the project site for tutorials and information.')
+DESCRIPTION = 'Auto-Correlogram Calculation in seismology'
+# LONG_DESCRIPTION = (
+#     'Please look at the project site for tutorials and information.')
+with open("README.md", "r") as fh:
+    LONG_DESCRIPTION = fh.read()
+
 
 ENTRY_POINTS = {
     'console_scripts': ['acc=acc.main:run',
@@ -54,9 +57,10 @@ setup(name='acc',
       version=VERSION,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,
+      long_description_content_type="text/markdown",
       url='https://github.com/weijias-opensource/acc',
       author='Weijia SUN',
-      author_email='swj@mail.iggcas.ac.cn; weijia_sun@163.com',
+      author_email='weijia_sun@163.com',
       license='MIT',
       packages=find_packages(),
       package_dir={'acc': 'acc'},

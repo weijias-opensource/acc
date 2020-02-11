@@ -1,8 +1,5 @@
-include README.rst
+include README.md
 include LICENSE
 include CHANGELOG
 include acc/data/*.dat
-include acc/example/*.json
-include acc/example/*.mseed
-include acc/example/*.xml
-include acc/example/*.tar.gz
+
