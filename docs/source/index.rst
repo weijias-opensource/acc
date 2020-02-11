@@ -10,6 +10,18 @@ Welcome to acc's documentation!
    :maxdepth: 3
    :caption: Contents:
 
+Tutorials
+=========
+
+Template Configuration File
+===========================
+
+.. literalinclude:: ../../examples/conf.json
+   :linenos:
+
+.. automodule:: acc
+   :members:
+
 Indices and tables
 ==================
 
