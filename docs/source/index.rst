@@ -13,6 +13,29 @@ Welcome to acc_docs's documentation!
 .. automodule:: acc
    :members:
 
+acc.core module
+---------------
+
+.. automodule:: acc.core
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+acc.io module
+-------------
+
+.. automodule:: acc.io
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+acc.migration module
+--------------------
+
+.. automodule:: acc.migration
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Indices and tables
 ==================
