@@ -27,7 +27,8 @@ ENTRY_POINTS = {
     'console_scripts': ['acc=acc.main:run',
                         ]}
 
-REQUIRES = ['cartopy', "click", 'commentjson', 'geographiclib',
+#REQUIRES = ['cartopy', "click", 'commentjson', 'geographiclib',
+REQUIRES = ["click", 'commentjson', 'geographiclib',
             'matplotlib>=2', 'numpy',
             'obspy>=1.0.3', "pandas",
             'setuptools', 'shapely', 'scipy>=0.19.0', 'tqdm'

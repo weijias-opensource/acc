@@ -1,13 +1,6 @@
 acc package
 ===========
 
-Subpackages
------------
-
-.. toctree::
-
-   acc.tests
-
 Submodules
 ----------
 
@@ -23,6 +16,14 @@ acc.io module
 -------------
 
 .. automodule:: acc.io
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+acc.main module
+---------------
+
+.. automodule:: acc.main
    :members:
    :undoc-members:
    :show-inheritance:
@@ -47,6 +48,14 @@ acc.processing module
 ---------------------
 
 .. automodule:: acc.processing
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+acc.profile module
+------------------
+
+.. automodule:: acc.profile
    :members:
    :undoc-members:
    :show-inheritance:

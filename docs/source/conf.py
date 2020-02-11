@@ -14,13 +14,11 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'acc'
 copyright = '2019, Weijia Sun'
 author = 'Weijia Sun'
-
 
 # -- General configuration ---------------------------------------------------
 

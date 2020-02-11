@@ -3,39 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to acc_docs's documentation!
+Welcome to acc's documentation!
 ====================================
 
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
-
-.. automodule:: acc
-   :members:
-
-acc.core module
----------------
-
-.. automodule:: acc.core
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-acc.io module
--------------
-
-.. automodule:: acc.io
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-acc.migration module
---------------------
-
-.. automodule:: acc.migration
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 Indices and tables
 ==================
