@@ -4,7 +4,7 @@
 """
 stacking
 """
-
+import os
 import glob
 import numpy as np
 from scipy.signal import hilbert
@@ -77,13 +77,33 @@ def stack(jsonfile):
 
     path = kwargs["io"]["outpath"]
     stations = glob.glob(path + "/1_results/*")
+    njobs = kwargs["njobs"]
 
     do_work = partial(_stack, **kwargs)
+
+    numbers = []
+    if njobs == 1:
+        logging.info('do work sequential (%d cores)', njobs)
+        for sta in tqdm(stations, total=len(stations)):
+            num = do_work(sta)
+            numbers.append(num)
+    else:
+        logging.info('do work parallel (%d cores)', njobs)
+        pool = multiprocessing.Pool(njobs)
+        for num in tqdm(pool.imap_unordered(do_work, stations), total=len(stations)):
+            numbers.append(num)
+        pool.close()
+        pool.join()
 
 
 def _stack(path, **kwargs):
 
     files = glob.glob(path + "/*")
+    # stations = glob.glob(path + "/*")
+    # print(stations)
+
+    # for sta in stations:
+    #     files = glob.glob(sta + "/*")
 
     st = Stream()
     for file in files:
@@ -103,6 +123,10 @@ def _stack(path, **kwargs):
     method = kwargs["stack"]["method"]
     power = kwargs["stack"]["power"]
     outpath = kwargs["io"]["outpath"] + "/1a_stack"
+    try:
+        os.makedirs(outpath)
+    except:
+        pass
 
     stream = st.copy()
     for chn in channels:
@@ -120,6 +144,7 @@ def _stack(path, **kwargs):
         filen = outpath + "/" + tr.id + "_%s.pkl" % method
         tr.write(filename=filen, format="PICKLE")
 
+    return 0
 
 def _bootstrap(st, normalize=True, **kwargs):
 

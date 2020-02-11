@@ -347,16 +347,16 @@ def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_
     rdbu_r = cm.get_cmap('RdBu_r', N)
     newcolors = rdbu_r(np.linspace(0, 1, N))
     white = np.array([255 / 255, 255 / 255, 255 / 255, 1])
-    a = int(N / 2 - N / 12)
-    b = int(N / 2 + N / 12)
+    a = int(N / 2 - N / 20)
+    b = int(N / 2 + N / 20)
     newcolors[a:b, :] = white
     newcmp = ListedColormap(newcolors)
 
     fig, (ax2, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(5.2, 3), sharey=True,
                                    gridspec_kw={'width_ratios': [0.6, 2]})
-    im = ax1.imshow(stack, interpolation='bilinear', aspect="auto",
+    im = ax1.imshow(stack*iclip, interpolation='bilinear', aspect="auto",
                     origin="lower", extent=extent,
-                    cmap=newcmp, vmin=-iclip, vmax=iclip)
+                    cmap=newcmp, vmin=-1, vmax=1)
 
     ax1.yaxis.set_major_locator(MultipleLocator(50))
     ax1.yaxis.set_minor_locator(MultipleLocator(10))
@@ -374,11 +374,11 @@ def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_
     ax1.invert_yaxis()
     # ax1.invert_xaxis()
 
-    ax2.plot(amp, depth, linewidth=0.75, color="k")
-    ax2.fill_betweenx(depth, 0, amp, where=amp >= 0, facecolor='red', alpha=0.7)
-    ax2.fill_betweenx(depth, 0, amp, where=amp < 0, facecolor='blue', alpha=0.7)
+    ax2.plot(amp*wclip, depth, linewidth=0.75, color="k", alpha=0.7)
+    ax2.fill_betweenx(depth, 0, amp*wclip, where=amp >= 0, facecolor='red', alpha=0.7)
+    ax2.fill_betweenx(depth, 0, amp*wclip, where=amp < 0, facecolor='blue', alpha=0.7)
     ax2.grid(which="both", axis="y", linestyle=":", linewidth=0.5)
-    ax2.set_xlim([-wclip, wclip])
+    ax2.set_xlim([-1, 1])
     ax2.set_xlabel("Amplitude")
     ax2.set_ylabel("Depth [km]")
 
