@@ -10,6 +10,8 @@ Welcome to acc_docs's documentation!
    :maxdepth: 3
    :caption: Contents:
 
+.. automodule:: acc
+   :members:
 
 
 Indices and tables
