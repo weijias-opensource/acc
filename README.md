@@ -1,23 +1,79 @@
-# ACC
-## Auto-Correlogram Calculation in seismology
+
 
 [![build status](https://travis-ci.org/trichter/rf.svg?branch=master)](https://travis-ci.org/trichter/rf)
 [![codecov](https://codecov.io/gh/trichter/rf/branch/master/graph/badge.svg)](https://codecov.io/gh/trichter/rf)
 [![pypi version](https://img.shields.io/pypi/v/rf.svg)](https://pypi.python.org/pypi/rf)
 [![python version](https://img.shields.io/pypi/pyversions/rf.svg)](https://python.org)
 
-##### Documentation: https://rf.readthedocs.io/
-##### Tutorials:
-  1. Calculate receiver functions - minimal example ([notebook][nb1])
-  2. Calculate receiver functions and stack them by common conversion points to create a profile ([notebook][nb2])
+# ACC: Auto-Correlogram Calculation in seismology
 
-[nb1]: http://nbviewer.jupyter.org/github/trichter/notebooks/blob/master/receiver_function_minimal_example.ipynb
-[nb2]: http://nbviewer.jupyter.org/github/trichter/notebooks/blob/master/receiver_function_profile_chile.ipynb
+Extracting P-wave reflections between the free surface and the lithospheric discontinuities to image the subsurface structures.
 
-##### Get help and discuss: [seistools](https://lserv.uni-jena.de/mailman/listinfo/seistools) mailing list
+### Installing
 
-##### Contribute:
+There are two ways:
 
-All contributions are welcome ... e.g. report bugs, discuss or add new features.
-For example, the package could profit from more advanced deconvolution techniques.
-New deconvolution functions can be testst by just passing them to deconvolve method (see docs).
+The first is downloading the code via git clone command.
+
+
+```
+>>> git clone 
+```
+
+and enter the main directroy of the package where the `setup.py` file is, then excute
+
+```
+>>> python setup.py install
+```
+.
+
+The second is just simply executing the command of 
+
+```
+pip install acc
+```
+.
+
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+
+### Prerequisites
+
+What things you need to install the software and how to install them
+
+```
+Give examples
+```
+
+## Running the tests
+
+Please go the the example directory and run `>>> sh run.sh` for a simple example.
+
+
+## Deployment
+
+Idealy the package can be running on all operating systems, including Windows, Mac and Linux. But the package is well tested on Ubuntu Linux (19.04).
+
+## Authors
+
+* **Weijia Sun**
+
+If you have any suggestions to help improve the package, please let me know and I will try to implement them as soon.
+
+## Contributors
+
+* **B L N. Kennett**
+
+## License
+
+
+
+## Acknowledgments
+
+The author learned to write a flexible and practical code for friendly usage from other packages. A small portion of code in this packakge is also reproduced from other projects.
+
+* rf
+* seispy
+* etc
+

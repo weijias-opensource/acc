@@ -16,18 +16,19 @@ def find_version(*paths):
 
 
 VERSION = find_version('acc', '__init__.py')
-DESCRIPTION = 'Auto and Cross Correlogram calculation in seismology'
+DESCRIPTION = 'Auto-Correlogram calculation in seismology'
 LONG_DESCRIPTION = (
     'Please look at the project site for tutorials and information.')
 
-# ENTRY_POINTS = {
-#     'console_scripts': ['rf-runtests = rf.tests:run',
-#                         'rf = rf.batch:run_cli']}
+ENTRY_POINTS = {
+    'console_scripts': ['acc=acc.main:run',
+                        ]}
 
-REQUIRES = ['commentjson',
-            'decorator', 'matplotlib>=2', 'numpy', 'scipy>=0.19.0',
-            'setuptools', 'obspy>=1.0.3',
-            'cartopy', 'geographiclib', 'shapely', 'toeplitz', 'tqdm']
+REQUIRES = ['cartopy', "click", 'commentjson', 'geographiclib',
+            'matplotlib>=2', 'numpy',
+            'obspy>=1.0.3', "pandas",
+            'setuptools', 'shapely', 'scipy>=0.19.0', 'tqdm'
+            ]
 
 # EXTRAS_REQUIRE = {
 #     'doc': ['sphinx', 'alabaster'],  # and decorator, obspy
@@ -53,20 +54,20 @@ setup(name='acc',
       version=VERSION,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,
-      url='https://github.com/trichter/rf',
-      author='Tom Eulenfeld',
+      url='https://github.com/weijias-opensource/acc',
+      author='Weijia SUN',
       author_email='swj@mail.iggcas.ac.cn; weijia_sun@163.com',
       license='MIT',
       packages=find_packages(),
       package_dir={'acc': 'acc'},
-      # install_requires=REQUIRES,
+      install_requires=REQUIRES,
       # extras_require=EXTRAS_REQUIRE,
-      # entry_points=ENTRY_POINTS,
+      entry_points=ENTRY_POINTS,
       # please note the entry_points
       # The magic is in the entry_points parameter. Below console_scripts, each line identifies one console script.
       # The first part before the equals sign (=) is the name of the script that should be generated,
       # the second part is the import path followed by a colon (:) with the Click command.
-      entry_points={"console_scripts": ['acc=acc.main:run',],},
+      # entry_points={"console_scripts": ['acc=acc.main:run',],},
       include_package_data=True,
       zip_safe=False,
       classifiers=CLASSIFIERS
