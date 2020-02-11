@@ -38,17 +38,12 @@ pip install acc
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
-### Prerequisites
 
-What things you need to install the software and how to install them
+## Tutorials
 
-```
-Give examples
-```
+Please go the the example directory and run `>>> sh run.sh` for a simple example of the Warramungga array data.
 
-## Running the tests
-
-Please go the the example directory and run `>>> sh run.sh` for a simple example.
+More tutorials will be added later.
 
 
 ## Deployment
@@ -57,7 +52,7 @@ Idealy the package can be running on all operating systems, including Windows, M
 
 ## Authors
 
-* **Weijia Sun**
+* **Weijia Sun (weijia_sun[at]163.com)**
 
 If you have any suggestions to help improve the package, please let me know and I will try to implement them as soon.
 
