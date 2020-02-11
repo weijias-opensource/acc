@@ -53,7 +53,7 @@ CLASSIFIERS = [
 ]
 
 
-setup(name='acc',
+setup(name='seis-acc',
       version=VERSION,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,

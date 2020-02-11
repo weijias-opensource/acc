@@ -3,46 +3,40 @@
 
 Extracting P-wave reflections between the free surface and the lithospheric discontinuities to image the subsurface structures.
 
-### Installing
+### Installation
 
-There are two ways:
-
-The first is downloading the code via git clone command.
-
+Here I provide two conventional ways to install the package. The first is downloading the code via git clone command.
 
 ```
->>> git clone 
+>>> git clone https://github.com/weijias-opensource/acc.git
 ```
 
-and enter the main directroy of the package where the `setup.py` file is, then excute
+and enter the main directroy of the package where the `setup.py` file is, then execute
 
 ```
 >>> python setup.py install
 ```
-.
-
-The second is just simply executing the command of 
+. The second is just simply executing the command of 
 
 ```
-pip install acc
+>>> pip install seis-acc
 ```
-
-
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 
 ## Tutorials
 
-Please go the the example directory and run `>>> sh run.sh` for a simple example of the Warramungga array data.
+Please go the the example directory and run 
 
-More tutorials will be added later.
+```
+>>> sh run.sh
+``` 
+
+for a simple example of the Warramungga array data. More tutorials will be added later.
 
 
 ## Deployment
 
-Idealy the package can be running on all operating systems, including Windows, Mac and Linux. But the package is well tested on Ubuntu Linux (19.04).
+The package could be running on all operating systems, including Windows, Mac and Linux. But the package is well tested on Ubuntu Linux (19.04) at now.
 
 ## Authors
 
@@ -52,7 +46,7 @@ If you have any suggestions to help improve the package, please let me know and 
 
 ## Contributors
 
-* **B L N. Kennett**
+* **B. L. N. Kennett**
 
 ## Acknowledgments
 
