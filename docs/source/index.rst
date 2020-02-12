@@ -10,8 +10,10 @@ Welcome to acc's documentation!
    :maxdepth: 3
    :caption: Contents:
 
-Tutorials
-=========
+.. include:: intro.rst
+
+.. include:: workflow.rst
+
 
 Template Configuration File
 ===========================
@@ -21,6 +23,10 @@ Template Configuration File
 
 .. automodule:: acc
    :members:
+
+
+.. include:: acc.rst
+
 
 Indices and tables
 ==================

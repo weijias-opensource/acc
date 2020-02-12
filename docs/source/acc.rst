@@ -1,8 +1,5 @@
-acc package
-===========
-
-Submodules
-----------
+API documentations
+==================
 
 acc.core module
 ---------------
