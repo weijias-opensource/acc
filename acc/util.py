@@ -7,6 +7,7 @@ import scipy.signal
 import numpy as np
 import collections
 from obspy import UTCDateTime
+from obspy import read
 
 def smooth(x, window_len=None, window='flat', method='zeros'):
     """Smooth the data using a window with requested size.
@@ -105,3 +106,37 @@ def iter_time(tr, length=3600, overlap=1800):
 
     return time_series
 
+
+def pkl2sac1(directory, suffix="pkl", fmt="SAC"):
+    """
+    Convert file from Pickle format with suffix of pkl to SAC format
+
+    :param directory: the directory contains files to be converted.
+    :param suffix: in this case, it should be "pkl".
+    :param fmt: the target format to be converted. Support SAC, MSEED.
+
+    Example: /the/path/hello.pkl to /the/path_SAC/hello.sac
+
+    """
+    import os
+    import glob
+
+    files = glob.glob(directory + "/*." + suffix)
+
+    if fmt not in ["SAC", "MSEED"]:
+        print("format should be 'SAC' or 'MSEED'.")
+        os._exit(0)
+
+    for file in files:
+        tr = read(file)[0]
+        savepath = os.path.dirname(file) + "_SAC"
+        bn = os.path.basename(file)
+        bn = os.path.splitext(bn)[0]
+        bn = ".".join([bn, fmt.lower()])
+        try:
+            os.makedirs(savepath)
+        except:
+            pass
+        fn = savepath + "/" + bn
+        print(fn)
+        tr.write(fn, format=fmt)
