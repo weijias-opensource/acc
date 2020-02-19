@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.3674643.svg)](http://dx.doi.org/10.5281/zenodo.3674643)
 
 # ACC: Auto-Correlogram Calculation in seismology
 
