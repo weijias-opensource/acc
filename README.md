@@ -1,4 +1,8 @@
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.3674643.svg)](http://dx.doi.org/10.5281/zenodo.3674643)
+[![PyPI version](https://badge.fury.io/py/seis-acc.svg)](https://badge.fury.io/py/seis-acc)
+[![GitHub license](https://img.shields.io/github/license/weijias-opensource/acc)](https://github.com/weijias-opensource/acc/blob/master/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/weijias-opensource/acc)](https://github.com/weijias-opensource/acc/issues)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/seis-acc)
 
 # ACC: Auto-Correlogram Calculation in seismology
 
