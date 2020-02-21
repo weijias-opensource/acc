@@ -3,6 +3,8 @@
 [![GitHub license](https://img.shields.io/github/license/weijias-opensource/acc)](https://github.com/weijias-opensource/acc/blob/master/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/weijias-opensource/acc)](https://github.com/weijias-opensource/acc/issues)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/seis-acc)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/seis-acc)
+
 
 # ACC: Auto-Correlogram Calculation in seismology
 
