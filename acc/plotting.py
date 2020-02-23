@@ -239,7 +239,7 @@ def plot_profile(jsonfile):
             lon0 = stmig[0].stats.station_longitude
             latlon0 = (lat0, lon0)
             _plot_1station(stmig, latlon0, azimuth, bins, width=binwidth, savepath=path,
-                           depth_range=depth_range)
+                           depth_range=depth_range, **kwargs)
     # profile
     else:
         wc = paras["wild_card"]
@@ -250,7 +250,7 @@ def plot_profile(jsonfile):
                        depth_range=depth_range, profile_id=profile_id, **kwargs)
 
 
-def _plot_1station(stmig, latlon0, azimuth, bins, width, savepath, depth_range):
+def _plot_1station(stmig, latlon0, azimuth, bins, width, savepath, depth_range, **kwargs):
     # get boxes for mig-stacking
     boxes = get_profile_boxes(latlon0, azimuth=azimuth, bins=bins, width=width)
 
@@ -287,8 +287,13 @@ def _plot_1station(stmig, latlon0, azimuth, bins, width, savepath, depth_range):
 
     # print(extent)
 
-    # return amp, stack, extent
-    _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=station_id, clip=clip)
+    paras = kwargs["plot"]
+    # image factor
+    iclip = paras["image_scale"]
+    # waveform factor
+    wclip = paras["wavef_scale"]
+   # return amp, stack, extent
+    _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=station_id, wclip=wclip, iclip=iclip)
 
 
 def _plot_stations(stmig, latlon0, azimuth, bins, width, savepath, depth_range, profile_id, **kwargs):

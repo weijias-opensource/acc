@@ -230,7 +230,7 @@ def _get_event_data(tr, tt_model, phase, acc_type, depth_unit="km"):
         component_azimuth = tr.stats.sac.cmpaz
         component_inclination = tr.stats.sac.cmpinc
     except:
-        print(tr.stats)
+        # print(tr.stats)
         if tr.stats.channel[-1] == "Z":
             component_azimuth = 0
             component_inclination = 0
@@ -240,6 +240,9 @@ def _get_event_data(tr, tt_model, phase, acc_type, depth_unit="km"):
         elif tr.stats.channel[-1] == "E":
             component_azimuth = 90
             component_inclination = 90
+        else:
+            print("component is not ZNE. ", tr.stats.channel)
+            os._exit(0)
 
 
 
@@ -273,7 +276,6 @@ def _get_event_data(tr, tt_model, phase, acc_type, depth_unit="km"):
     # arrivals = model.get_travel_times(source_depth_in_km=event_depth,
     #                                   distance_in_degree=distance,
     #                                   phase_list=[phase])
-
     header = {"model": tt_model, "type": acc_type,
               "event_latitude": event_latitude, "event_longitude": event_longitude, "event_depth": event_depth,
               "event_time": event_time, "event_magnitude": event_magnitude,
