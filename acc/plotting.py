@@ -238,16 +238,29 @@ def plot_profile(jsonfile):
             lat0 = stmig[0].stats.station_latitude - 0.5 * (bins[-1] + bins[0]) / 111.195
             lon0 = stmig[0].stats.station_longitude
             latlon0 = (lat0, lon0)
-            _plot_1station(stmig, latlon0, azimuth, bins, width=binwidth, savepath=path,
-                           depth_range=depth_range, **kwargs)
+            boxes = _plot_1station(stmig, latlon0, azimuth, bins, width=binwidth, savepath=path,
+                                   depth_range=depth_range, **kwargs)
     # profile
     else:
         wc = paras["wild_card"]
         files = glob.glob(path + "/migration_1station/*%s*.pkl" % wc)
         print("number of stations to stack: ", len(files))
         stmig = read(path + "/migration_1station/*%s*.pkl" % wc)
-        _plot_stations(stmig, latlon0, azimuth, bins, width=binwidth, savepath=path,
-                       depth_range=depth_range, profile_id=profile_id, **kwargs)
+        boxes = _plot_stations(stmig, latlon0, azimuth, bins, width=binwidth, savepath=path,
+                               depth_range=depth_range, profile_id=profile_id, **kwargs)
+        # write the pos and latlon
+        path = os.path.join(kwargs["io"]["outpath"], "pos")
+        try:
+            os.makedirs(path)
+        except:
+            pass
+        fn = os.path.join(path, profile_id + ".dat")
+        fp = open(fn, "w")
+        fp.write("pos lat lon\n")
+        for b in boxes:
+            fp.write("%.1f %.4f %.4f\n" % (b["pos"], b["latlon"][0], b["latlon"][1]))
+        fp.close()
+        
 
 
 def _plot_1station(stmig, latlon0, azimuth, bins, width, savepath, depth_range, **kwargs):
@@ -294,6 +307,8 @@ def _plot_1station(stmig, latlon0, azimuth, bins, width, savepath, depth_range, 
     wclip = paras["wavef_scale"]
    # return amp, stack, extent
     _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=station_id, wclip=wclip, iclip=iclip)
+
+    return boxes
 
 
 def _plot_stations(stmig, latlon0, azimuth, bins, width, savepath, depth_range, profile_id, **kwargs):
@@ -344,6 +359,8 @@ def _plot_stations(stmig, latlon0, azimuth, bins, width, savepath, depth_range, 
     # return amp, stack, extent
     _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=profile_id, wclip=wclip, iclip=iclip)
 
+    return boxes
+
 
 def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id, wclip=1, iclip=1):
     # init figure and axes
@@ -367,11 +384,11 @@ def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_
     ax1.xaxis.set_minor_locator(MultipleLocator(50))
     ax1.grid(which="both", axis="y", linestyle=":", linewidth=0.5)
 
-    ax1.annotate(profile_id,
-                 xy=(0.995, 0.995), xycoords='axes fraction',
-                 # xytext=(0.95, 0.05), textcoords=station_id,
-                 # arrowprops=dict(facecolor='black', shrink=0.05),
-                 horizontalalignment='right', verticalalignment='top')
+    # ax1.annotate(profile_id,
+    #              xy=(0.995, 0.995), xycoords='axes fraction',
+    #              # xytext=(0.95, 0.05), textcoords=station_id,
+    #              # arrowprops=dict(facecolor='black', shrink=0.05),
+    #              horizontalalignment='right', verticalalignment='top')
 
     ax1.set_ylim(depth_range)
     ax1.set_xlim(dist_range)
@@ -389,8 +406,11 @@ def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_
     cbar = fig.colorbar(im, ax=ax1)
     cbar.set_label("Amplitude")
 
-    ax1.set_xlabel("CRP Distance [km]")
+    ax1.set_xlabel("Distance [km]")
     # ax1.set_ylabel("Depth [km]")
+
+    ax1.set_title(profile_id, fontsize=10)
+    ax2.set_title("Stacked", fontsize=10)
 
     plt.tight_layout()
     path = savepath + "/figures"
