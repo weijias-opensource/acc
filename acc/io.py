@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+# @Author: Weijia Sun
+# @Date:   2020-03-26 12:54:15
+# @Last Modified by:   Weijia Sun
+# @Last Modified time: 2020-03-26 12:54:36
+
 """
 I/O modules
 """
@@ -214,7 +219,10 @@ def _get_event_data(tr, tt_model, phase, acc_type, depth_unit="km"):
     event_longitude = tr.stats.sac.evlo
     event_latitude = tr.stats.sac.evla
     event_depth = tr.stats.sac.evdp
-    event_magnitude = tr.stats.sac.mag
+    try:
+        event_magnitude = tr.stats.sac.mag
+    except:
+        event_magnitude = 6.66
 
     # if depth_unit == "m":
     #     event_depth /= 1000.0
