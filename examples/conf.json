@@ -114,6 +114,8 @@
 
 ### plotting
 "plot": {
+        "figsize": [20, 3],
+        "width_ratios": [1, 9],
         "depth_range": [0, 200],
         "dist_range": [150, 350], # if null, use the range of bins.
         "image_scale": 4,
