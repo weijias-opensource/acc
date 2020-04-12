@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
+# @Author: Weijia Sun
+# @Date:   2020-04-10 12:09:15
+# @Last Modified by:   Weijia Sun
+# @Last Modified time: 2020-04-10 20:14:27
+
 from shapely.geometry import Polygon
 from geographiclib.geodesic import Geodesic
 import pandas as pd
 import numpy as np
+import timeit
 
 
 _LARGE_BOX_WIDTH = 2000
@@ -128,6 +134,10 @@ def _find_box_cartesian(latlon, boxes):
             return box
 
 
+def internal_profile(tr):
+    return tr.stats.mig
+
+
 def profile(stream, boxes, crs=None):
     """
     Stack traces in stream by piercing point coordinates in defined boxes.
@@ -139,10 +149,29 @@ def profile(stream, boxes, crs=None):
     """
 
     # read all migrated data saved in trace headers into Pandas DataFrame
-    dfmig = pd.DataFrame()
+    # dfmig = pd.DataFrame()
+    # for k, tr in enumerate(stream):
+    #     df = tr.stats.mig
+    #     dfmig = dfmig.append(df)
+    #---------------------------------------------------------------------
+    # parallel data, since for a profile there are thousands of raypath, 
+    # the process would be very time-consuming
+    from tqdm import tqdm
+    import multiprocessing
+    from functools import partial
+
+    traces = []
     for tr in stream:
-        df = tr.stats.mig
-        dfmig = dfmig.append(df)
+        traces.append(tr)
+    
+    df_lst = []
+    pool = multiprocessing.Pool()
+    for df in tqdm(pool.imap_unordered(internal_profile, traces), total=len(traces)):
+        df_lst.append(df)
+    pool.close()
+    pool.join()
+    dfmig = pd.concat(df_lst, axis=0, join="outer", ignore_index=True)
+    #---------------------------------------------------------------------
 
     # get depth samplings
     depths = dfmig["depth"].unique()
@@ -162,29 +191,77 @@ def profile(stream, boxes, crs=None):
     count = np.zeros((ndep, npos), dtype=int)
 
     # loops
-    for depth in depths:
-        df2 = dfmig[dfmig["depth"] == depth]
+    # serial version----------------------------------------------------
+    
+    # for kk, depth in enumerate(depths):
+    #     print("Depth loops {}/{} in stacking.".format(kk, len(depths)))
+    #     df2 = dfmig[dfmig["depth"] == depth]
 
-        lats = df2["lat"].to_numpy()
-        lons = df2["lon"].to_numpy()
-        data = df2["data"].to_numpy()
+    #     lats = df2["lat"].to_numpy()
+    #     lons = df2["lon"].to_numpy()
+    #     data = df2["data"].to_numpy()
 
-        for i, lat in enumerate(lats):
-            lon = lons[i]
-            ppoint = (lat, lon)
-            box = _find_box_cartesian(ppoint, boxes)
-            if box is None:
-                continue
-            pos = box['pos']
+    #     for i, lat in enumerate(lats):
+    #         lon = lons[i]
+    #         ppoint = (lat, lon)
+    #         box = _find_box_cartesian(ppoint, boxes)
+    #         if box is None:
+    #             continue
+    #         pos = box['pos']
 
-            idep = depths.index(depth)
-            ipos = pos_dist.index(pos)
-            # print(pos, ipos, ppoint)
+    #         idep = depths.index(depth)
+    #         ipos = pos_dist.index(pos)
 
-            stack[idep][ipos] += data[i]
-            count[idep][ipos] += 1
+    #         stack[idep][ipos] += data[i]
+    #         count[idep][ipos] += 1
+    
+    # end serial version----------------------------------------------------
+    # parallel version----------------------------------------------------
+    do_work = partial(df_depth, dfmig=dfmig, boxes=boxes, depths=depths, pos_dist=pos_dist, a=stack, b=count)
+
+    results = []
+    pool = multiprocessing.Pool()
+    for res in tqdm(pool.imap_unordered(do_work, depths), total=len(depths)):
+        results.append(res)
+    pool.close()
+    pool.join()
+    for res in results:
+        stack += res[0]
+        count += res[1]
+    
+    # end parallel version----------------------------------------------------
 
     d = np.array(depths)
     p = np.array(pos_dist)
 
     return p, d, stack
+
+
+def df_depth(depth, dfmig, boxes, depths, pos_dist, a, b):
+
+    stack = np.copy(a)
+    count = np.copy(b)
+
+    df2 = dfmig[dfmig["depth"] == depth]
+
+    lats = df2["lat"].to_numpy()
+    lons = df2["lon"].to_numpy()
+    data = df2["data"].to_numpy()
+
+    for i, lat in enumerate(lats):
+        lon = lons[i]
+        ppoint = (lat, lon)
+        box = _find_box_cartesian(ppoint, boxes)
+        if box is None:
+            continue
+        pos = box['pos']
+
+        idep = depths.index(depth)
+        ipos = pos_dist.index(pos)
+        # print(pos, ipos, ppoint)
+
+        stack[idep][ipos] += data[i]
+        count[idep][ipos] += 1
+        
+    return (stack, count)
+    

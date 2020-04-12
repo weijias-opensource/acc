@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
+# @Author: Weijia Sun
+# @Date:   2020-04-07 13:09:23
+# @Last Modified by:   Weijia Sun
+# @Last Modified time: 2020-04-10 20:56:45
+
 """
 Plottings
 """
 import matplotlib.pyplot as plt
-from matplotlib.ticker import (FormatStrFormatter, MultipleLocator, AutoMinorLocator, FixedLocator, FixedFormatter, MaxNLocator)
+from matplotlib.ticker import (FormatStrFormatter, MultipleLocator,
+                               AutoMinorLocator, FixedLocator, FixedFormatter, MaxNLocator)
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib.markers import MarkerStyle
 from matplotlib import cm
@@ -76,9 +82,9 @@ def plot_acc_one_station(stream, fname=None, fig_width=7., trace_height=0.5,
     hs = HS / FH
     fb = FB / FH
     ft = FT / FH
-    FL = 0.5 # figure left
-    FR = 0.2 # figure right
-    FW = fig_width # figure width
+    FL = 0.5  # figure left
+    FR = 0.2  # figure right
+    FW = fig_width  # figure width
     FW3 = 0.8
     FW2 = FW - FL - FR - (DW + FW3) * bool(info)
     fl = FL / FW
@@ -160,9 +166,11 @@ def plot_acc_one_station(stream, fname=None, fig_width=7., trace_height=0.5,
     else:
         return fig
 
+
 def plot_ppoint(stream, fname="pp.pdf", depths=[30, 50, 80, 100, 150, 200]):
 
-    colors = ["gray", "red", "blue", "orange", "green", "magenta", "cyan", "chocolate", "pink", "royalblue"]
+    colors = ["gray", "red", "blue", "orange", "green",
+              "magenta", "cyan", "chocolate", "pink", "royalblue"]
     if len(depths) > 10:
         raise Exception("too many depths. Should be less than 10.")
 
@@ -170,7 +178,8 @@ def plot_ppoint(stream, fname="pp.pdf", depths=[30, 50, 80, 100, 150, 200]):
 
     for tr in stream:
         df = tr.stats.mig
-        ax.scatter(tr.stats.station_longitude, tr.stats.station_latitude, c="black", marker="v", s=100)
+        ax.scatter(tr.stats.station_longitude,
+                   tr.stats.station_latitude, c="black", marker="v", s=100)
 
         for i, depth in enumerate(depths):
             df2 = df[df["depth"] == depth]
@@ -186,7 +195,6 @@ def plot_ppoint(stream, fname="pp.pdf", depths=[30, 50, 80, 100, 150, 200]):
 
     plt.tight_layout()
     plt.savefig(fname)
-
 
 
 def plot_profile(jsonfile):
@@ -235,7 +243,8 @@ def plot_profile(jsonfile):
         files.sort()
         for file in files:
             stmig = read(file)
-            lat0 = stmig[0].stats.station_latitude - 0.5 * (bins[-1] + bins[0]) / 111.195
+            lat0 = stmig[0].stats.station_latitude - \
+                0.5 * (bins[-1] + bins[0]) / 111.195
             lon0 = stmig[0].stats.station_longitude
             latlon0 = (lat0, lon0)
             boxes = _plot_1station(stmig, latlon0, azimuth, bins, width=binwidth, savepath=path,
@@ -245,7 +254,24 @@ def plot_profile(jsonfile):
         wc = paras["wild_card"]
         files = glob.glob(path + "/migration_1station/*%s*.pkl" % wc)
         print("number of stations to stack: ", len(files))
-        stmig = read(path + "/migration_1station/*%s*.pkl" % wc)
+        # stmig = Stream()
+        # for file in files:
+        #     st = read(file)
+        #     stmig += st
+        # parallel reading
+        print("Loading data from disk")
+        from tqdm import tqdm
+        import multiprocessing
+        stmig = Stream()
+        stlst = []
+        pool = multiprocessing.Pool()
+        for st in tqdm(pool.imap_unordered(read, files), total=len(files)):
+            stlst.append(st)
+        pool.close()
+        pool.join()
+        for st in stlst:
+            stmig += st
+        
         boxes = _plot_stations(stmig, latlon0, azimuth, bins, width=binwidth, savepath=path,
                                depth_range=depth_range, profile_id=profile_id, **kwargs)
         # write the pos and latlon
@@ -254,13 +280,19 @@ def plot_profile(jsonfile):
             os.makedirs(path)
         except:
             pass
-        fn = os.path.join(path, profile_id + ".dat")
+        # in some case, user do not set the name profile_id leading to the filename of '.dat',
+        # which is invisible under Linux systems.
+        if profile_id != "":
+            fn = os.path.join(path, profile_id + ".dat")
+        else:
+            fn = os.path.join(path, "pos.dat")
         fp = open(fn, "w")
         fp.write("pos lat lon\n")
         for b in boxes:
-            fp.write("%.1f %.4f %.4f\n" % (b["pos"], b["latlon"][0], b["latlon"][1]))
+            fp.write("%.1f %.4f %.4f\n" %
+                     (b["pos"], b["latlon"][0], b["latlon"][1]))
+            print(b["pos"], b["latlon"][0], b["latlon"][1])
         fp.close()
-        
 
 
 def _plot_1station(stmig, latlon0, azimuth, bins, width, savepath, depth_range, **kwargs):
@@ -280,7 +312,8 @@ def _plot_1station(stmig, latlon0, azimuth, bins, width, savepath, depth_range, 
     if tr.stats.location == "":
         station_id = ".".join([tr.stats.network, tr.stats.station])
     else:
-        station_id = ".".join([tr.stats.network, tr.stats.station, tr.stats.location])
+        station_id = ".".join(
+            [tr.stats.network, tr.stats.station, tr.stats.location])
     print("Plotting - station id: ", station_id)
 
     # latitude corresponding to pos
@@ -305,8 +338,20 @@ def _plot_1station(stmig, latlon0, azimuth, bins, width, savepath, depth_range, 
     iclip = paras["image_scale"]
     # waveform factor
     wclip = paras["wavef_scale"]
+    figsize = tuple(paras["figsize"])
+    width_ratios = paras["width_ratios"]
    # return amp, stack, extent
-    _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=station_id, wclip=wclip, iclip=iclip)
+    _plot(amp, depth, stack, extent, dist_range, depth_range, savepath,
+          profile_id=station_id, wclip=wclip, iclip=iclip, figsize=figsize, width_ratios=width_ratios)
+
+    # save netcdf
+    path = os.path.join(kwargs["io"]["outpath"], "netcdf4")
+    try:
+        os.makedirs(path)
+    except:
+        pass
+    filen = os.path.join(kwargs["io"]["outpath"], "netcdf4", station_id+".nc")
+    write_netcdf4(pos=pos, dep=depth, data=stack, file=filen)
 
     return boxes
 
@@ -316,12 +361,17 @@ def _plot_stations(stmig, latlon0, azimuth, bins, width, savepath, depth_range, 
     paras = kwargs["plot"]
     iclip = paras["image_scale"]
     wclip = paras["wavef_scale"]
+    figsize = tuple(paras["figsize"])
+    width_ratios = paras["width_ratios"]
 
     # get boxes for mig-stacking
     boxes = get_profile_boxes(latlon0, azimuth=azimuth, bins=bins, width=width)
+    # print("get boxes for mig-stacking done")
 
     # depth and stack array
+    print("\nCRP migration and stacking")
     pos, depth, stack = profile(stream=stmig, boxes=boxes)
+    # print("stacking done")
 
     # the setting makes the station location in the center of the image
     # pos -= 0.5*(bins[-1]-bins[0])
@@ -357,12 +407,26 @@ def _plot_stations(stmig, latlon0, azimuth, bins, width, savepath, depth_range, 
     # print(extent)
 
     # return amp, stack, extent
-    _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id=profile_id, wclip=wclip, iclip=iclip)
+    _plot(amp, depth, stack, extent, dist_range, depth_range, savepath,
+          profile_id=profile_id, wclip=wclip, iclip=iclip, figsize=figsize, width_ratios=width_ratios)
+
+    # save netcdf
+    path = os.path.join(kwargs["io"]["outpath"], "netcdf4")
+    try:
+        os.makedirs(path)
+    except:
+        pass
+    if profile_id != "":
+        filen = os.path.join(kwargs["io"]["outpath"], "netcdf4", profile_id + ".nc")
+    else:
+        filen = os.path.join(kwargs["io"]["outpath"], "netcdf4", "profile.nc")
+    write_netcdf4(pos=pos, dep=depth, data=stack, file=filen)
 
     return boxes
 
 
-def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id, wclip=1, iclip=1):
+def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_id,
+          wclip=1, iclip=1, figsize=(5.2, 3), width_ratios=[0.6, 2]):
     # init figure and axes
     N = 256
     rdbu_r = cm.get_cmap('RdBu_r', N)
@@ -372,9 +436,9 @@ def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_
     b = int(N / 2 + N / 20)
     newcolors[a:b, :] = white
     newcmp = ListedColormap(newcolors)
-
-    fig, (ax2, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(5.2, 3), sharey=True,
-                                   gridspec_kw={'width_ratios': [0.6, 2]})
+    # print(figsize)
+    fig, (ax2, ax1) = plt.subplots(nrows=1, ncols=2, figsize=figsize, sharey=True,
+                                   gridspec_kw={'width_ratios': width_ratios})
     im = ax1.imshow(stack*iclip, interpolation='bilinear', aspect="auto",
                     origin="lower", extent=extent,
                     cmap=newcmp, vmin=-1, vmax=1)
@@ -396,8 +460,10 @@ def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_
     # ax1.invert_xaxis()
 
     ax2.plot(amp*wclip, depth, linewidth=0.75, color="k", alpha=0.7)
-    ax2.fill_betweenx(depth, 0, amp*wclip, where=amp >= 0, facecolor='red', alpha=0.7)
-    ax2.fill_betweenx(depth, 0, amp*wclip, where=amp < 0, facecolor='blue', alpha=0.7)
+    ax2.fill_betweenx(depth, 0, amp*wclip, where=amp >=
+                      0, facecolor='red', alpha=0.7)
+    ax2.fill_betweenx(depth, 0, amp*wclip, where=amp <
+                      0, facecolor='blue', alpha=0.7)
     ax2.grid(which="both", axis="y", linestyle=":", linewidth=0.5)
     ax2.set_xlim([-1, 1])
     ax2.set_xlabel("Amplitude")
@@ -422,4 +488,21 @@ def _plot(amp, depth, stack, extent, dist_range, depth_range, savepath, profile_
         plt.savefig(fn)
     plt.close()
 
+
+def write_netcdf4(pos, dep, data, file):
+    import netCDF4 as nc
+    
+    ds = nc.Dataset(file, "w", format="NETCDF4")
+    ds.createDimension("distance", len(pos))
+    ds.createDimension("depth", len(dep))
+
+    ds.createVariable("distance", np.float32, ("distance",))
+    ds.createVariable("depth", np.float32, ("depth",))
+    
+    ds.variables["distance"][:] = pos
+    ds.variables["depth"][:] = dep
+
+    ds.createVariable("data", np.float32, ("depth", "distance"))
+    ds.variables["data"][:] = data
+    ds.close()
 
