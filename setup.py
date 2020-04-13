@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# @Author: Weijia Sun
+# @Date:   2020-04-13 16:36:22
+# @Last Modified by:   Weijia Sun
+# @Last Modified time: 2020-04-13 16:36:28
 # Copyright 2019 Weijia Sun, MIT license
 import os.path
 import re
@@ -31,7 +36,7 @@ ENTRY_POINTS = {
 REQUIRES = ["click", 'commentjson', 'geographiclib',
             'matplotlib>=2', 'numpy',
             'obspy>=1.0.3', "pandas",
-            'setuptools', 'shapely', 'scipy>=0.19.0', 'tqdm'
+            'setuptools', 'shapely', 'scipy>=0.19.0', 'tqdm', "netCDF4"
             ]
 
 # EXTRAS_REQUIRE = {
